@@ -13,7 +13,7 @@ function JobDetail() {
             .catch((e) => {
                 setJob(null);
             });
-    }, []);
+    }, [jobId]);
 
     if (job === null) {
         return <p>Not found</p>;

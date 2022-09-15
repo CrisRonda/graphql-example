@@ -14,7 +14,7 @@ function CompanyDetail() {
             .catch((e) => {
                 setCompany(null);
             });
-    }, []);
+    }, [companyId]);
 
     if (company === null) {
         return <p>Not found</p>;
