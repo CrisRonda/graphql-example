@@ -10,6 +10,12 @@ export const resolvers = {
             return Company.findById(args.id);
         }
     },
+    Mutation: {
+        createJob: (_root, { input }) => {
+            const { title, companyId, description } = input;
+            return Job.create({ title, companyId, description });
+        }
+    },
 
     Company: {
         jobs: (company) => {
