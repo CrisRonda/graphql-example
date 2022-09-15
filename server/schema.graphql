@@ -25,10 +25,8 @@ input UpdateJobInput {
     id: ID!
     title: String!
     description: String
-    companyId: ID!
 }
 input CreateJobInput {
     title: String!
-    companyId: ID!
     description: String
 }
