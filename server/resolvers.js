@@ -14,6 +14,12 @@ export const resolvers = {
         createJob: (_root, { input }) => {
             const { title, companyId, description } = input;
             return Job.create({ title, companyId, description });
+        },
+        deleteJob: (_root, { id }) => {
+            return Job.delete(id);
+        },
+        updateJob: (_root, { input }) => {
+            return Job.update(input);
         }
     },
 
