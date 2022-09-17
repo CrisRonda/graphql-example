@@ -1,7 +1,32 @@
-import { request, gql } from 'graphql-request';
+import { ApolloClient, gql, HttpLink, InMemoryCache } from '@apollo/client';
 import { getAccessToken } from '../auth';
+import { setContext } from '@apollo/client/link/context';
 
 const GRAPHQL_URL = 'http://localhost:9000/graphql';
+
+const httpLink = new HttpLink({
+    uri: GRAPHQL_URL
+});
+
+// Middleware to pass token in each HTTP request
+const authLink = setContext((_, { headers }) => {
+    // get the authentication token from local storage if it exists
+    // replace the below implementation to get token from wherever you might have stored it.
+    const token = getAccessToken();
+    // return the headers to the context so httpLink can read them
+    return {
+        headers: {
+            ...headers,
+            Authorization: token ? `Bearer ${token}` : ''
+        }
+    };
+});
+
+const client = new ApolloClient({
+    link: authLink.concat(httpLink),
+    cache: new InMemoryCache()
+});
+
 export const getJobs = async () => {
     const query = gql`
         query {
@@ -14,7 +39,9 @@ export const getJobs = async () => {
             }
         }
     `;
-    const { jobs } = await request(GRAPHQL_URL, query);
+    const {
+        data: { jobs }
+    } = await client.query({ query });
     return jobs;
 };
 
@@ -32,7 +59,9 @@ export const getJobById = async (id) => {
             }
         }
     `;
-    const { job } = await request(GRAPHQL_URL, query, { id });
+    const {
+        data: { job }
+    } = await client.query({ query, variables: { id } });
     return job;
 };
 
@@ -49,24 +78,32 @@ export const getCompanyById = async (id) => {
             }
         }
     `;
-    const { company } = await request(GRAPHQL_URL, query, { id });
+    const {
+        data: { company }
+    } = await client.query({ query, variables: { id } });
     return company;
 };
 export const createJob = async (input) => {
-    console.log(1, input);
-    const query = gql`
+    const mutation = gql`
         mutation CreateJobMutation($input: CreateJobInput!) {
             job: createJob(input: $input) {
                 id
             }
         }
     `;
-    console.log(2);
     const headers = {
         Authorization: `Bearer ${getAccessToken()}`
     };
+    console.log(headers);
     const variables = { input };
-    console.log(3, headers, variables);
-    const { job } = await request(GRAPHQL_URL, query, variables, headers);
+    const {
+        data: { job }
+    } = await client.mutate({
+        mutation,
+        variables,
+        context: {
+            headers
+        }
+    });
     return job;
 };
