@@ -1,27 +1,28 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@apollo/client';
 import { useParams } from 'react-router';
 import { Link } from 'react-router-dom';
-import { getJobById } from '../graphql/queries';
+import { JOB_QUERY } from '../graphql/templateQueries';
 
+const useJob = (id) => {
+    const { data, loading, error } = useQuery(JOB_QUERY, {
+        fetchPolicy: 'network-only',
+        variables: { id }
+    });
+    return {
+        job: data?.job,
+        loading,
+        error
+    };
+};
 function JobDetail() {
     const { jobId } = useParams();
-    const [job, setJob] = useState();
-
-    useEffect(() => {
-        getJobById(jobId)
-            .then(setJob)
-            .catch((e) => {
-                setJob(null);
-            });
-    }, [jobId]);
-
-    if (job === null) {
-        return <p>Not found</p>;
-    }
-    if (!job) {
+    const { job, loading, error } = useJob(jobId);
+    if (loading) {
         return <p>Loading...</p>;
     }
-
+    if (error) {
+        return <p>Error 😢</p>;
+    }
     return (
         <div>
             <h1 className="title">{job.title}</h1>

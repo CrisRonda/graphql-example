@@ -1,26 +1,29 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@apollo/client';
 import { useParams } from 'react-router';
-import { getCompanyById } from '../graphql/queries';
+import { COMPANY_BY_ID_QUERY } from '../graphql/templateQueries';
 import JobList from './JobList';
 
+const useCompany = (id) => {
+    const { data, loading, error } = useQuery(COMPANY_BY_ID_QUERY, {
+        fetchPolicy: 'network-only',
+        variables: { id }
+    });
+    return {
+        company: data?.company,
+        loading,
+        error
+    };
+};
 function CompanyDetail() {
     const { companyId } = useParams();
 
-    const [company, setCompany] = useState();
+    const { company, loading, error } = useCompany(companyId);
 
-    useEffect(() => {
-        getCompanyById(companyId)
-            .then(setCompany)
-            .catch((e) => {
-                setCompany(null);
-            });
-    }, [companyId]);
-
-    if (company === null) {
-        return <p>Not found</p>;
-    }
-    if (!company) {
+    if (loading) {
         return <p>Loading...</p>;
+    }
+    if (error) {
+        return <p>Error 😢</p>;
     }
 
     return (
